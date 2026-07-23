@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/pun.py": {
+      "includeFiles": "api/system_prompt.txt"
+    }
+  }
+}

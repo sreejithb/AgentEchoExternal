@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pun Generator</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 4rem auto; padding: 0 1rem; }
+    input, button { font-size: 1rem; padding: 0.5rem; }
+    input { width: 70%; }
+    #result { margin-top: 1.5rem; font-size: 1.2rem; min-height: 3rem; }
+  </style>
+</head>
+<body>
+  <h1>Pun Generator</h1>
+  <p>Enter a word or short phrase:</p>
+  <input id="phrase" type="text" placeholder="e.g. coffee" />
+  <button id="submit">Generate pun</button>
+  <div id="result"></div>
+
+  <script>
+    const input = document.getElementById("phrase");
+    const button = document.getElementById("submit");
+    const result = document.getElementById("result");
+
+    async function generatePun() {
+      const phrase = input.value.trim();
+      if (!phrase) return;
+
+      button.disabled = true;
+      result.textContent = "Thinking...";
+
+      try {
+        const res = await fetch("/api/pun", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phrase }),
+        });
+        const data = await res.json();
+        result.textContent = res.ok ? data.pun : `Error: ${data.error}`;
+      } catch (err) {
+        result.textContent = `Error: ${err.message}`;
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    button.addEventListener("click", generatePun);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") generatePun(); });
+  </script>
+</body>
+</html>
