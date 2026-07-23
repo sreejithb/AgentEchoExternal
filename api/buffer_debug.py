@@ -20,8 +20,14 @@ query {
 
 CREATE_POST_INPUT_INTROSPECTION = """
 query {
-  __type(name: "CreatePostInput") {
-    inputFields {
+  shareMode: __type(name: "ShareMode") {
+    enumValues { name }
+  }
+  schedulingType: __type(name: "SchedulingType") {
+    enumValues { name }
+  }
+  mutationType: __type(name: "Mutation") {
+    fields {
       name
       type {
         name
