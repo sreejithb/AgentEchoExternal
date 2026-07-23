@@ -13,6 +13,9 @@ def load_system_prompt() -> str:
 
 
 class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self._send_json(200, {"status": "ok", "served_by": "api/pun.py", "path": self.path})
+
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0))
         raw_body = self.rfile.read(length) if length else b"{}"
