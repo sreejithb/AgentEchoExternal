@@ -16,11 +16,17 @@
   <input id="phrase" type="text" placeholder="e.g. coffee" />
   <button id="submit">Generate pun</button>
   <div id="result"></div>
+  <button id="share" style="display: none; margin-top: 1rem;">Post to LinkedIn</button>
+  <div id="shareStatus"></div>
 
   <script>
     const input = document.getElementById("phrase");
     const button = document.getElementById("submit");
     const result = document.getElementById("result");
+    const shareButton = document.getElementById("share");
+    const shareStatus = document.getElementById("shareStatus");
+
+    let currentPun = "";
 
     async function generatePun() {
       const phrase = input.value.trim();
@@ -28,6 +34,8 @@
 
       button.disabled = true;
       result.textContent = "Thinking...";
+      shareButton.style.display = "none";
+      shareStatus.textContent = "";
 
       try {
         const res = await fetch("/api/pun", {
@@ -37,6 +45,10 @@
         });
         const data = await res.json();
         result.textContent = res.ok ? data.pun : `Error: ${data.error}`;
+        if (res.ok) {
+          currentPun = data.pun;
+          shareButton.style.display = "inline-block";
+        }
       } catch (err) {
         result.textContent = `Error: ${err.message}`;
       } finally {
@@ -44,8 +56,33 @@
       }
     }
 
+    async function postToLinkedIn() {
+      if (!currentPun) return;
+      if (!confirm("This will publish immediately to your LinkedIn profile. Continue?")) return;
+
+      shareButton.disabled = true;
+      shareStatus.textContent = "Posting...";
+
+      try {
+        const res = await fetch("/api/share", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: currentPun }),
+        });
+        const data = await res.json();
+        shareStatus.textContent = res.ok && !data.errors
+          ? "Posted to LinkedIn."
+          : `Error: ${JSON.stringify(data.errors || data.error || data)}`;
+      } catch (err) {
+        shareStatus.textContent = `Error: ${err.message}`;
+      } finally {
+        shareButton.disabled = false;
+      }
+    }
+
     button.addEventListener("click", generatePun);
     input.addEventListener("keydown", (e) => { if (e.key === "Enter") generatePun(); });
+    shareButton.addEventListener("click", postToLinkedIn);
   </script>
 </body>
 </html>
