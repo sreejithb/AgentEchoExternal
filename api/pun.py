@@ -2,6 +2,7 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 import json
 import os
+import traceback
 
 from openai import OpenAI
 
@@ -17,6 +18,17 @@ class handler(BaseHTTPRequestHandler):
         self._send_json(200, {"status": "ok", "served_by": "api/pun.py", "path": self.path})
 
     def do_POST(self):
+        try:
+            self._handle_post()
+        except Exception as e:
+            # TEMPORARY: surfaces the real traceback in the response for debugging.
+            # Remove once the underlying crash is fixed.
+            self._send_json(500, {
+                "error": f"{type(e).__name__}: {e}",
+                "traceback": traceback.format_exc(),
+            })
+
+    def _handle_post(self):
         length = int(self.headers.get("Content-Length", 0))
         raw_body = self.rfile.read(length) if length else b"{}"
 
