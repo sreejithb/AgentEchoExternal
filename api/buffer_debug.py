@@ -19,15 +19,11 @@ query {
 """
 
 CHANNELS_QUERY = """
-query Channels($organizationId: String!) {
-  channels(first: 20, input: { organizationId: $organizationId }) {
-    edges {
-      node {
-        id
-        name
-        service
-      }
-    }
+query Channels($organizationId: OrganizationId!) {
+  channels(input: { organizationId: $organizationId }) {
+    id
+    name
+    service
   }
 }
 """
