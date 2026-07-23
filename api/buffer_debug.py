@@ -18,6 +18,21 @@ query {
 }
 """
 
+CREATE_POST_INPUT_INTROSPECTION = """
+query {
+  __type(name: "CreatePostInput") {
+    inputFields {
+      name
+      type {
+        name
+        kind
+        ofType { name kind }
+      }
+    }
+  }
+}
+"""
+
 CHANNELS_QUERY = """
 query Channels($organizationId: OrganizationId!) {
   channels(input: { organizationId: $organizationId }) {
@@ -67,9 +82,12 @@ class handler(BaseHTTPRequestHandler):
                 api_key, CHANNELS_QUERY, {"organizationId": org["id"]}
             )
 
+        create_post_input_schema = _graphql(api_key, CREATE_POST_INPUT_INTROSPECTION)
+
         self._send_json(200, {
             "organizations_response": orgs_response,
             "channels_by_org": channels_by_org,
+            "create_post_input_schema": create_post_input_schema,
         })
 
     def _send_json(self, status: int, payload: dict):
