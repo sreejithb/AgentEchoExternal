@@ -2,9 +2,8 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 import json
 import os
-import traceback
 
-from openai import OpenAI
+from openai import APIStatusError, OpenAI
 
 SYSTEM_PROMPT_PATH = Path(__file__).parent / "system_prompt.txt"
 
@@ -20,13 +19,8 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         try:
             self._handle_post()
-        except Exception as e:
-            # TEMPORARY: surfaces the real traceback in the response for debugging.
-            # Remove once the underlying crash is fixed.
-            self._send_json(500, {
-                "error": f"{type(e).__name__}: {e}",
-                "traceback": traceback.format_exc(),
-            })
+        except APIStatusError as e:
+            self._send_json(502, {"error": f"OpenAI API error: {e.message}"})
 
     def _handle_post(self):
         length = int(self.headers.get("Content-Length", 0))
